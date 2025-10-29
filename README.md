@@ -488,13 +488,15 @@ docker build -t rbaldiviezo/todo_frontend:1.1 ./frontend
 docker build -t rbaldiviezo/todo_logger:1.0 ./logger
 ```
 
-2. Para subir imagenes a docker hub:
+4. Para subir imagenes a docker hub:
 
 ```bash
 docker push rbaldiviezo/todo_backend:1.0
 docker push rbaldiviezo/todo_frontend:1.1
 docker push rbaldiviezo/todo_logger:1.0
 ```
+### Repositorio Docker Hub
+[Repositorio Docker Hub](https://hub.docker.com/u/rbaldiviezo)
 
 ### Configuración del Clúster
 
