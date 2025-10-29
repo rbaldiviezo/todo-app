@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head><title>To-Do List</title></head>
+<body>
+  <h1>Mis Tareas</h1>
+  <ul id="task-list"></ul>
+  <input id="new-task" placeholder="Nueva tarea" />
+  <button onclick="addTask()">Agregar</button>
+
+  <script>
+    const API = "http://localhost:5000/tasks";
+    
+    async function loadTasks() {
+      const res = await fetch(API);
+      const data = await res.json();
+      document.getElementById('task-list').innerHTML =
+        data.map(t => `<li>${t.task}</li>`).join('');
+    }
+
+    async function addTask() {
+      const task = document.getElementById('new-task').value;
+      await fetch(API, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({task})
+      });
+      loadTasks();
+    }
+
+    loadTasks();
+  </script>
+</body>
+</html>

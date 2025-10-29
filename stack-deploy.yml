@@ -1,0 +1,91 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    environment:
+      POSTGRES_USER: todo_user
+      POSTGRES_PASSWORD: todo_pass
+      POSTGRES_DB: todo_db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - app_net
+
+  backend:
+    image: todo-app-backend:1.0
+    build: ./backend
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+    environment:
+      - DB_HOST=db
+      - POSTGRES_USER=todo_user
+      - POSTGRES_PASSWORD=todo_pass
+      - POSTGRES_DB=todo_db
+      - LOGGER_URL=http://logger:4000/log
+    depends_on:
+      - db
+      - logger
+    ports:
+      - "5000:5000"
+    networks:
+      - app_net
+
+  frontend:
+    image: todo-app-frontend:1.0
+    build: ./frontend
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - app_net
+
+  logger:
+    image: todo-app-logger:1.0
+    build: ./logger
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    ports:
+      - "4000:4000"
+    volumes:
+      - logs_data:/logs
+    networks:
+      - app_net
+
+  adminer:
+    image: adminer:4
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    ports:
+      - "8081:8080"
+    depends_on:
+      - db
+    networks:
+      - app_net
+
+volumes:
+  db_data:
+  logs_data:
+
+networks:
+  app_net:
+    driver: overlay

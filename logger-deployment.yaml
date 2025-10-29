@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todo-logger
+  namespace: todo-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: todo-logger
+  template:
+    metadata:
+      labels:
+        app: todo-logger
+    spec:
+      containers:
+        - name: logger
+          image: rbaldiviezo/todo_logger:1.0
+          ports:
+            - containerPort: 4000
+          volumeMounts:
+            - name: logs-volume
+              mountPath: /logs
+      volumes:
+        - name: logs-volume
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: todo-logger
+  namespace: todo-app
+spec:
+  type: ClusterIP
+  selector:
+    app: todo-logger
+  ports:
+    - port: 4000
+      targetPort: 4000

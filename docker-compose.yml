@@ -1,0 +1,68 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: todo_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - app_net
+
+  backend:
+    build: ./backend
+    container_name: todo_backend
+    environment:
+      - DB_HOST=db
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - LOGGER_URL=http://logger:4000/log
+    depends_on:
+      - db
+      - logger
+    ports:
+      - "${BACKEND_PORT}:5000"
+    networks:
+      - app_net
+
+  frontend:
+    build: ./frontend
+    container_name: todo_frontend
+    ports:
+      - "${FRONTEND_PORT}:80"
+    depends_on:
+      - backend
+    networks:
+      - app_net
+
+  adminer:
+    image: adminer:4
+    container_name: todo_adminer
+    ports:
+      - "${ADMINER_PORT}:8080"
+    depends_on:
+      - db
+    networks:
+      - app_net
+
+  logger:
+    build: ./logger
+    container_name: todo_logger
+    ports:
+      - "${LOGGER_PORT}:4000"
+    volumes:
+      - ./logs:/logs
+    networks:
+      - app_net
+
+volumes:
+  db_data:
+
+networks:
+  app_net:
+    driver: bridge
